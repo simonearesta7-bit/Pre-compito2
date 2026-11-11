@@ -3,8 +3,8 @@ $risultato = null;
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $a = isset($_POST["a"]) ? (float)$_POST["a"] : 0;
     $b = isset($_POST["b"]) ? (float)$_POST["b"] : 0;
-    $operazione = $_POST["operazione"] ?? "somma";
-    $options = $_POST["options"] ?? [];
+    $operazione = isset($_POST["operazione"]) ? $_POST["operazione"] : "somma";
+    $options = isset($_POST["options"]) ? $_POST["options"] : array();
     if ($operazione === "somma") {
         $risultato = $a + $b;
     } else {
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         }
     }
-    if (!is_string($risultato)) {
+    if (!($operazione === "quoziente" && $b == 0)) {
         if (in_array("absolute", $options)) {
             $risultato = abs($risultato);
         }
