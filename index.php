@@ -1,40 +1,41 @@
 <?php
-if (isset($_GET["a"]) && isset($_GET["b"])) {
-    $a = (float)$_GET["a"];
-    $b = (float)$_GET["b"];
-    $op = $_GET["op"] ?? 'somma';
-    $risultato = 0;
-    switch ($op) {
-        case 'somma':
-            $risultato = $a + $b;
-            break;
-        case 'differenza':
+$risultato = null;
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $a = isset($_POST["a"]) ? (float)$_POST["a"] : 0;
+    $b = isset($_POST["b"]) ? (float)$_POST["b"] : 0;
+    $operazione = $_POST["operazione"] ?? "somma";
+    $options = $_POST["options"] ?? [];
+    if ($operazione === "somma") {
+        $risultato = $a + $b;
+    } else {
+        if ($operazione === "differenza") {
             $risultato = $a - $b;
-            break;
-        case 'prodotto':
-            $risultato = $a * $b;
-            break;
-        case 'quoziente':
-            $risultato = ($b != 0) ? ($a / $b) : "Impossibile dividere per zero";
-            break;
+        } else {
+            if ($operazione === "prodotto") {
+                $risultato = $a * $b;
+            } else {
+                if ($operazione === "quoziente") {
+                    if ($b != 0) {
+                        $risultato = $a / $b;
+                    } else {
+                        $risultato = "Errore: divisione per zero";
+                    }
+                }
+            }
+        }
     }
-    if (is_numeric($risultato) && isset($_GET["options"]) && is_array($_GET["options"])) {
-        foreach ($_GET["options"] as $option) {
-            if ($option == "absolute") {
-                $risultato = abs($risultato);
-            }
-            if ($option == "square") {
-                $risultato = pow($risultato, 2);
-            }
-            if ($option == "round") {
-                $risultato = round($risultato, 2);
-            }
+    if (!is_string($risultato)) {
+        if (in_array("absolute", $options)) {
+            $risultato = abs($risultato);
+        }
+        if (in_array("quadrato", $options)) {
+            $risultato = $risultato * $risultato;
         }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,48 +43,38 @@ if (isset($_GET["a"]) && isset($_GET["b"])) {
 </head>
 <body>
     <h1>Calcolatrice</h1>
-    <form action="" method="GET">
+    <form action="" method="post">
         <div>
             <label for="a">a:</label>
-            <input type="number" step="any" id="a" name="a" required value="<?php echo $_GET['a'] ?? ''; ?>">
+            <input type="number" id="a" name="a" required>
         </div>
         <div>
             <label for="b">b:</label>
-            <input type="number" step="any" id="b" name="b" required value="<?php echo $_GET['b'] ?? ''; ?>">
+            <input type="number" id="b" name="b">
         </div>
-            <div>
-                <input type="radio" id="somma" name="op" value="somma" checked>
-                <label for="somma">somma</label>
-            </div>
-            <div>
-                <input type="radio" id="differenza" name="op" value="differenza">
-                <label for="differenza">differenza</label>
-            </div>
-            <div>
-                <input type="radio" id="prodotto" name="op" value="prodotto">
-                <label for="prodotto">prodotto</label>
-            </div>
-            <div>
-                <input type="radio" id="quoziente" name="op" value="quoziente">
-                <label for="quoziente">quoziente</label>
-            </div>
-            <div>
-                <input id="abs" type="checkbox" name="options[]" value="absolute" />
-                <label for="abs">Valore assoluto</label>
-            </div>
-            <div>
-                <input id="sqr" type="checkbox" name="options[]" value="square" />
-                <label for="sqr">Quadrato</label>
-            </div>
-            <div>
-                <input id="rnd" type="checkbox" name="options[]" value="round" />
-                <label for="rnd">Arrotonda a 2 decimali</label>
-            </div>
         <br>
-        <input type="submit" value="Calcola">
+        <p><strong>Opzioni</strong></p>
+        <div>
+            <input id="abs" type="checkbox" name="options[]" value="absolute" />
+            <label for="abs">valore assoluto</label>
+        </div>
+        <div>
+            <input id="quadrato" type="checkbox" name="options[]" value="quadrato" />
+            <label for="quadrato">quadrato</label>
+        </div>
+        <br>
+        <p><strong>Operazioni:</strong></p>
+        <div>
+            <button type="submit" name="operazione" value="somma">somma</button>
+            <button type="submit" name="operazione" value="differenza">differenza</button>
+            <button type="submit" name="operazione" value="prodotto">prodotto</button>
+            <button type="submit" name="operazione" value="quoziente">quoziente</button>
+        </div>
     </form>
-    <?php if (isset($risultato)): ?>
-        <h2>Risultato: <?php echo $risultato; ?></h2>
-    <?php endif; ?>
+    <?php 
+    if ($risultato !== null) { 
+        echo "<h2>Risultato: " . $risultato . "</h2>";
+    } 
+    ?>
 </body>
 </html>
